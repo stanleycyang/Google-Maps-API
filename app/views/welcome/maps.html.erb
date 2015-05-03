@@ -1,0 +1,180 @@
+	<style type="text/css">
+	      html, body, #map-canvas { height: 100%; margin: 0; padding: 0;}
+        header {
+          margin-top: 15px;
+          width: 100%;
+          height: 50px;
+          position: fixed;
+          z-index: 10;
+        }
+	</style>
+
+
+    <script type="text/javascript"
+      src="<%= @endpoint %>">
+    </script>
+
+    <header>
+      <div class="col-md-4 col-md-offset-4">
+        <div class="form-inline">
+          <input type="text" class="form-control" id="address" placeholder="Enter your address" autocomplete="off" />
+          <button id="submit-address" class="btn btn-success">Submit address</button>
+        </div>
+      </div>
+    </header>
+
+    <script type="text/javascript">
+
+
+    	function showAddress(address, map){
+        var geocoder = new google.maps.Geocoder();
+          // Run Geocoder
+        geocoder.geocode( { 'address': address}, function(results, status) {
+          if(status === google.maps.GeocoderStatus.OK){
+
+                 if (status !== google.maps.GeocoderStatus.ZERO_RESULTS) {
+                    console.log(results[0].geometry.location);
+                    map.setCenter(results[0].geometry.location);
+
+                    var infowindow = new google.maps.InfoWindow(
+                        { content: '<b>'+address+'</b>',
+                          size: new google.maps.Size(150,50)
+                        });
+
+                    var marker = new google.maps.Marker({
+                        position: results[0].geometry.location,
+                        map: map,
+                        title:address
+                    });
+                    google.maps.event.addListener(marker, 'click', function() {
+                        infowindow.open(map,marker);
+                        marker.setAnimation(google.maps.Animation.BOUNCE);
+                    });
+                 } else {
+                   alert("No results found");
+                 }
+
+          }else{
+            alert('Geocoder failed!');
+          }
+        });
+    	}
+
+
+
+	      function initialize() {
+
+          var address = document.querySelector('#address');
+          var submitButton = document.querySelector('#submit-address');
+
+          submitButton.onclick = function(){
+            showAddress(address.value, map);
+          }
+
+	      	// Marker coordinate
+	      	var myLatlng = new google.maps.LatLng(-25.363882,131.044922);
+
+	      	// San Jose
+	      	var sanJose = new google.maps.LatLng(37.339085, -121.8914807);
+
+	      	// Los Angeles
+	      	var LA = new google.maps.LatLng(34.0522342, -118.2436849);
+
+
+
+	      	// Add styles
+
+	     //	var styles = [
+	     //		{
+			 //    stylers: [
+			 //      { hue: "#00ffe6" },
+			 //      { saturation: -20 }
+			 //    ]
+			 //  },{
+			 //    featureType: "road",
+			 //    elementType: "geometry",
+			 //    stylers: [
+			 //      { lightness: 100 },
+			 //      { visibility: "simplified" }
+			 //    ]
+			 //  },{
+			 //    featureType: "road",
+			 //    elementType: "labels",
+			 //    stylers: [
+			 //      { visibility: "off" }
+			 //    ]
+			 //  }
+	     //	];
+          var styles = [{"featureType":"all","elementType":"labels","stylers":[{"visibility":"off"}]},{"featureType":"all","elementType":"labels.text","stylers":[{"visibility":"on"}]},{"featureType":"all","elementType":"labels.text.fill","stylers":[{"color":"#000000"}]},{"featureType":"all","elementType":"labels.text.stroke","stylers":[{"color":"#ffffff"}]},{"featureType":"all","elementType":"labels.icon","stylers":[{"visibility":"on"}]},{"featureType":"administrative","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"landscape","elementType":"all","stylers":[{"color":"#ffffff"}]},{"featureType":"poi","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"road","elementType":"geometry.fill","stylers":[{"color":"#000000"},{"weight":1}]},{"featureType":"road","elementType":"geometry.stroke","stylers":[{"color":"#000000"},{"weight":0.8}]},{"featureType":"road","elementType":"labels","stylers":[{"visibility":"on"}]},{"featureType":"transit","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"water","elementType":"all","stylers":[{"visibility":"off"}]}];
+
+	      	var styledMap = new google.maps.StyledMapType(styles, {name: "Styled Map"});
+
+	        var mapOptions = {
+	          center: LA,
+	          zoom: 9 // Zoom level
+	          // mapTypeId: 'satellite'
+	        };
+	        var map = new google.maps.Map(document.getElementById('map-canvas'),
+	            mapOptions);
+            //Associate the styled map with the MapTypeId and set it to display.
+          map.mapTypes.set('map_style', styledMap);
+          map.setMapTypeId('map_style');
+
+          setMarkers(map, beaches);
+
+          // Create the marker
+          //var marker = new google.maps.Marker({
+            //position: LA,
+            //animation: google.maps.Animation.DROP,
+            //draggable: true,
+            //title:"Hello World!"
+        //});
+
+            //google.maps.event.addListener(marker, 'click', function(){
+            //	marker.setAnimation(google.maps.Animation.BOUNCE);
+            //});
+
+            // To add the marker to the map, call setMap();
+            //marker.setMap(map);
+	      }
+
+	      	var beaches = [
+	      		['Huntington Beach', 33.660297, -117.99922650000002],
+            ['GA Santa Monica', 34.0129158, -118.49514110000001],
+            ['GA Downtown LA', 34.03093, -118.26664119999998],
+	      		['Seal Beach', 33.7414064, -118.10478660000001],
+	      		['Long Beach', 33.7700504, -118.19373949999999],
+	      		['Venice Beach', 33.9850469, -118.46948320000001],
+	      		['Manhattan Beach', 33.8847361, -118.41090889999998]
+	      	];
+
+          function setMarkers(map, locations){
+            for(var i = 0; i < locations.length; i++){
+              var beach = locations[i];
+              var LatLng = new google.maps.LatLng(beach[1], beach[2]);
+              var marker = new google.maps.Marker({
+                  position: LatLng,
+                  draggable: true,
+                  map: map,
+                  animation: google.maps.Animation.DROP,
+                  title: beach[0],
+                  zIndex: beach[3]
+              });
+
+              google.maps.event.addListener(marker, 'click', toggleBounce);
+
+              function toggleBounce(){
+                this.setAnimation(google.maps.Animation.BOUNCE);
+              }
+
+            }
+          }
+
+
+	      google.maps.event.addDomListener(window, 'load', initialize);
+
+
+    </script>
+
+	<div id="map-canvas"></div>
+
